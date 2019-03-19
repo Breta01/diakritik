@@ -12,13 +12,12 @@ def load_dic(path):
     dictionary = {}
     with open(path, 'r') as f:
         for line in f:
-            fields = line.strip().split(',')
+            fields = line.strip().split(';')
             dictionary[fields[0]] = {}
 
             for i in range(1, len(fields), 3):
-                dictionary[fileds[0]][fields[i]] = ast.literal_eval(fields[i+2])
+                dictionary[fields[0]][fields[i]] = ast.literal_eval(fields[i+2])
     return dictionary
-
 
 
 with open('obj/dictionary.pkl', 'rb') as f:
@@ -68,7 +67,7 @@ def simple_eval(sentence):
             continue
 
         m = []
-        print(dictionary[word.lower()])
+        # print(dictionary[word.lower()])
         for k, v in dictionary[word.lower()].items():
             if m == [] or m[0] < v[0]:
                 m = [v[0], k]
@@ -98,9 +97,6 @@ def evaluate(path, sentence_evaluator):
                         test_sentence.append(None)
 
                 result = sentence_evaluator(test_sentence)
-                print(result)
-                print(sentence)
-                break
                 correct += sum([1 if (a is None or a == b) else 0
                                 for a, b in zip(result, sentence)])
                 total += len(sentence)
@@ -116,7 +112,7 @@ def evaluate(path, sentence_evaluator):
                       (correct / max(total, 1), i, num_lines), end='\r')
 
     print()
-    print('Correct / Total: %r / %r' % (correct, total))
+    print('Correct / Total: %r / %r' % (correct, max(total, 1)))
     print('Accuracy:', correct / total * 100)
 
 

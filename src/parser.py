@@ -4,6 +4,15 @@ import pickle
 
 from alphabet import remove_accents
 
+# TODO:
+#     - udělat classy pro vlastnosti
+#     - vlastnosti podle predchoziho slova
+#     - prumerna vlastnost vety
+#     - maskovani vlastnosti
+#     - slovesa, detekce (vlastnosti, ztah ke slovum)
+#     - nejblizsi podstatne jmeno
+#     - Parser?
+
 
 parser = argparse.ArgumentParser(
     description="Parse words and create files for application.")
@@ -13,22 +22,24 @@ parser.add_argument(
     help="Path to extracted Syn2015 file.")
 
 
-class Word:
-    def __init__(self, fields):
+class Token:
+    def __init__(self, fields, position):
+        self.positon = position
         self.word = fields[0].lower()
         self.base = fields[1]
         self.tag = fields[2]
-        # (relative occurence, ...)
-        self.vector = [1, 0, 0]
 
-        # self.wa_word = remove_accents(self.word)
+        self.upper = fields[0].isupper() if position != 1 else None
+        self.singular = self.tag[3] == 'S' if self.tag[3] != '-' else None
 
-    def finalize_vec(self, total):
-        self.vector[0] /= total
-        return str(self.vector)
+    def get_rod(self):
+        return self.tag[2]
 
-    def increment(self):
-        self.vector[0] += 1
+    def get_tag(self):
+        return self.tag
+
+    def get_word(self):
+        return self.word
 
     def __str__(self):
         return self.word
@@ -38,18 +49,52 @@ class Word:
         return self.word + ' - ' + self.tag[0]
 
 
+class Entry:
+    def __init__(self, wa_word, token):
+        self.wa_word = wa_word
+        self.token = token
+        self.indicators = {}
+
+    def no_accents(self):
+        return self.wa_word
+
+    def word(self):
+        return self.token.get_word()
+
+    def tag(self):
+        return self.token.get_tag()
+
+    def add_indicators(self, indicators):
+        for name, val in indicators:
+            add_ind(name, val)
+
+    def add_ind(self, name, value):
+        if name in self.indicators:
+            self.indicators[name].increment(value)
+
+    def finalize_vec(self, total):
+        # Poscitat procenta pres vsechny varianty slova
+        # total[0] = sum([w.vector[0] for w in dic[k].values()])
+        vector = []
+        for name in self.indicators.keys():
+            self.indicators[name].finalize()
+            vector.append(self.indicators[name].vector())
+        return str(vector)
+
+
 class Dictionary:
     def __init__(self):
         self.dictionary = {}
 
-    def add_word(self, wa_word, word):
-        if wa_word in self.dictionary:
-            if str(word) in self.dictionary[wa_word]:
-                self.dictionary[wa_word][str(word)].increment()
-            else:
-                self.dictionary[wa_word][str(word)] = word
-        else:
-            self.dictionary[wa_word] = {str(word): word}
+    def add_entry(self, entry, indicators):
+        word = entry.word()
+        wa_word = entry.no_accents()
+        if not wa_word in self.dictionary:
+            self.dictionary[wa_word] = {word: entry}
+        elif not word in self.dictionary[wa_word]:
+            self.dictionary[wa_word][word] = entry
+
+        self.dictionary[wa_word][word].add_indicators(indicators)
 
     def size(self):
         return len(self.dictionary)
@@ -58,21 +103,23 @@ class Dictionary:
 def save_words(dictionary):
     dic = dictionary.dictionary
     with open('obj/dictionary.dic', 'w') as f:
-        for k in sorted(list(dic.keys())):
-            f.write(k)
-            total = sum([w.vector[0] for w in dic[k].values()])
-            for w in dic[k].values():
-                f.write(';' + ';'.join([w.word, w.tag, w.finalize_vec(total)]))
+        for key in sorted(list(dic.keys())):
+            f.write(key)
+            for entry in dic[key].values():
+                f.write(';')
+                f.write(';'.join([entry.get_word(),
+                                  entry.tag(),
+                                  entry.finalize_vec(total)]))
             f.write('\n')
 
 
 def process_sentence(sentence, dictionary):
-    # print(sentence)
-    for word in sentence:
-        if word.tag[0] != 'Z':
-            if word.word.isalpha():
+    for i, token in enumerate(sentence):
+        if token.tag[0] != 'Z':
+            if token.get_word().isalpha():
                 try:
-                    dictionary.add_word(remove_accents(word.word), word)
+                    entry = Entry(remove_accents(token.get_word()), token)
+                    dictionary.add_entry(entry)
                 except:
                     pass
             #         print(word)
@@ -84,17 +131,22 @@ def words_extract(path):
     dictionary = Dictionary()
 
     with open(path) as f:
+        # Precalculated just for indication
         num_lines = 140668456
+
         sentence = []
+        position = 0
 
         for i, line in enumerate(f):
             if line.strip() == '</s>':
                 process_sentence(sentence, dictionary)
                 sentence = []
+                position = 0
 
             if line[0] != '<':
                 fields = line.split('\t')
-                sentence.append(Word(fields))
+                position += 1
+                sentence.append(Word(fields, position))
 
             if i % 100000 == 0:
                 print('Size %r: %r / %r' %
