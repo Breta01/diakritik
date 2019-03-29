@@ -7,6 +7,7 @@ from indicators import indicators, IndicatorCounter
 # from indicators import Indicator
 
 # TODO:
+#     - odstranit vektroy u slov s jednou variantou
 #     - udělat classy pro vlastnosti
 #     - vlastnosti podle predchoziho slova
 #     - prumerna vlastnost vety
@@ -14,7 +15,6 @@ from indicators import indicators, IndicatorCounter
 #     - slovesa, detekce (vlastnosti, ztah ke slovum)
 #     - nejblizsi podstatne jmeno
 #     - Parser?
-
 
 parser = argparse.ArgumentParser(
     description="Parse words and create files for application.")
@@ -61,12 +61,14 @@ class EntryToken(Token):
 
     def update(self, sentence, position):
         for ind in indicators:
+            print("Updating:", ind)
             indicators[ind].increment(sentence, position, self)
 
     def vector(self):
         vector = []
         for ind in indicators:
-            vector.append(self.counter.get(name)[1:])
+            print("Vector:", ind, self.counter.get(ind)[1:])
+            vector.extend(self.counter.get(ind)[1:])
         return vector
 
 
@@ -97,7 +99,6 @@ class Dictionary:
         else:
             self.dictionary[wa_word].add_token(token)
 
-        print(token.get_word())
         self.dictionary[wa_word].tokens[token.get_word()].update(
             sentence, token.position)
 
@@ -106,16 +107,18 @@ class Dictionary:
 
 
 def save_words(dictionary):
+    """Saving dictionary as:
+    noaccents word, variations count, (for each variation: word, tag, vector)"""
     dic = dictionary.dictionary
     with open('obj/dictionary.dic', 'w') as f:
         for key in sorted(list(dic.keys())):
             dic[key].finalize()
-            f.write(key)
+            f.write(','.join([key, str(len(dic[key].tokens))]))
             for t_entry in dic[key].tokens.values():
-                f.write(';')
-                f.write(';'.join([t_entry.get_word,
-                                  t_entry.tag(),
-                                  str(t_entry.vector())]))
+                f.write(',')
+                f.write(','.join([t_entry.get_word(),
+                                  t_entry.get_tag(),
+                                  ','.join(map(str, t_entry.vector()))]))
             f.write('\n')
 
 
@@ -154,6 +157,9 @@ def words_extract(path):
             if i % 100000 == 0:
                 print('Size %r: %r / %r' %
                       (dictionary.size(), i, num_lines), end='\r')
+
+            if i == 200:
+                break
 
     print()
     print('Number of words:', dictionary.size())

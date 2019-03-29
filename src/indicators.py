@@ -14,25 +14,6 @@
 #     #     self.vector[5 + word.rod]
 from abc import ABC, abstractmethod
 
-
-class IndicatorCounter:
-    def __init__(self):
-        self.counter = {}
-        for ind in indicators:
-            self.counter[ind] = indicators[ind].get_vec()
-
-    def get(self, name):
-        return self.counter[name]
-
-    def increment(self, name, idx):
-        """Increment indicator and total counter."""
-        self.counter[name][idx] += 1
-        self.counter[name][0] += 1
-
-    def normalize(self, name, total):
-        self.counter[name] = [i / total for i in self.counter[name]]
-
-
 class Indicator(ABC):
     """Base class for all indicators."""
     def __init__(self, name, size):
@@ -61,14 +42,33 @@ class Indicator(ABC):
 
 
 class OccurenceInd(Indicator):
-    def __init__(self):
-        super().__init__("occurence", 1)
+    def __init__(self, name="occurence"):
+        super().__init__(name, 1)
 
     def increment(self, sentence, position, token):
         token.counter.increment(self.name, 1);
 
 
+
 indicators = {
     "occurence": OccurenceInd()
 }
+
+
+class IndicatorCounter:
+    def __init__(self):
+        self.counter = {}
+        for ind in indicators:
+            self.counter[ind] = indicators[ind].get_vec()
+
+    def get(self, name):
+        return self.counter[name]
+
+    def increment(self, name, idx):
+        """Increment indicator and total counter."""
+        self.counter[name][idx] += 1
+        self.counter[name][0] += 1
+
+    def normalize(self, name, total):
+        self.counter[name] = [i / total for i in self.counter[name]]
 
