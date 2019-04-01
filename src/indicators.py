@@ -24,17 +24,20 @@ class Indicator(ABC):
     def increment(self, sentence, position):
         pass
 
+    @staticmethod
     def get_total(self, tokens):
         total = 0
         for key in tokens:
             total += tokens[key].counter.get(self.name)[0]
         return total
 
+    @staticmethod
     def get_vec(self):
         """Provide initial vector for counting."""
         # +1 space for total counter
         return (self.vec_size + 1) * [0]
 
+    @staticmethod
     def finalize(self, tokens):
         total = self.get_total(tokens)
         for key in tokens:
@@ -45,8 +48,60 @@ class OccurenceInd(Indicator):
     def __init__(self, name="occurence"):
         super().__init__(name, 1)
 
+    @staticmethod
     def increment(self, sentence, position, token):
         token.counter.increment(self.name, 1);
+
+
+class UppercaseInd(Indicator):
+    def __init__(self, name="uppercase"):
+        supre().__init__(name, 2)
+
+    @staticmethod
+    def increment(self, sentence, position, token):
+        if (position > 1 or
+            (position == 1 and sentence[0].tag[0] != 'Z')):
+            is_upper = sentence[position].org_word[0].isupper()
+        else:
+            is_upper = None
+
+        if is_upper is not None:
+            if is_upper:
+                token.counter.increment(self.name, 1)
+            else:
+                token.counter.increment(self.name, 2)
+
+
+class SentenceTypeInd(Indicator):
+    def __init__(self, name="sentence_type"):
+        super().__init__(name, 1)
+        self.maper = {
+            '.': 1,
+            '!': 2,
+            '?': 3
+        }
+
+    @staticmethod
+    def increment(self, sentence, position, token):
+        symbol = None
+        for i in range(1, 3):
+            if sentence[-i].word in self.maper:
+                symbol = sentence[-i].word
+
+        if symbol is None:
+            print("No correct end symbol of sentence found.")
+
+        if self.maper[symbol] is not None:
+            token.counter.increment(self.name, self.maper[symbol]);
+
+
+class SpeechInd(Indicator):
+    def __init__(self, name="speech"):
+        supre().__init__(name, 2)
+
+    @staticmethod
+    def increment(self, sentence, position, token):
+        pass
 
 
 

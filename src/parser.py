@@ -29,10 +29,10 @@ class Token:
         self.position = position
         self.fields = fields
         self.word = fields[0].lower()
+        self.org_word = fields[0]
         self.base = fields[1]
         self.tag = fields[2]
 
-        self.upper = fields[0].isupper() if position != 1 else None
         self.singular = self.tag[3] == 'S' if self.tag[3] != '-' else None
 
     def get_rod(self):
@@ -151,8 +151,8 @@ def words_extract(path):
 
             if line[0] != '<':
                 fields = line.split('\t')
-                position += 1
                 sentence.append(Token(fields, position))
+                position += 1
 
             if i % 100000 == 0:
                 print('Size %r: %r / %r' %
