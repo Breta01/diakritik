@@ -3,7 +3,7 @@ import argparse
 import pickle
 
 from alphabet import remove_accents
-from indicators import indicators, IndicatorCounter
+from indicators import indicators, SpeechInd, IndicatorCounter
 # from indicators import Indicator
 
 # TODO:
@@ -25,7 +25,7 @@ parser.add_argument(
 
 
 class Token:
-    def __init__(self, fields, position):
+    def __init__(self, fields, position, speech=False):
         self.position = position
         self.fields = fields
         self.word = fields[0].lower()
@@ -33,6 +33,7 @@ class Token:
         self.base = fields[1]
         self.tag = fields[2]
 
+        self.speech = speech
         self.singular = self.tag[3] == 'S' if self.tag[3] != '-' else None
 
     def get_rod(self):
@@ -61,7 +62,7 @@ class EntryToken(Token):
 
     def update(self, sentence, position):
         for ind in indicators:
-            print("Updating:", ind)
+            # print("Updating:", ind)
             indicators[ind].increment(sentence, position, self)
 
     def vector(self):
@@ -142,6 +143,7 @@ def words_extract(path):
 
         sentence = []
         position = 0
+        speech = False
 
         for i, line in enumerate(f):
             if line.strip() == '</s>':
@@ -151,14 +153,17 @@ def words_extract(path):
 
             if line[0] != '<':
                 fields = line.split('\t')
-                sentence.append(Token(fields, position))
+                newToken = Token(fields, position, speech)
+                sentence.append(newToken)
+                if SpeechInd.is_speech(newToken.word):
+                    speech = not speech
                 position += 1
 
             if i % 100000 == 0:
                 print('Size %r: %r / %r' %
                       (dictionary.size(), i, num_lines), end='\r')
 
-            if i == 200:
+            if i == 10000:
                 break
 
     print()
