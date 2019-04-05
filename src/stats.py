@@ -4,39 +4,53 @@ import numpy as np
 import ast
 
 from alphabet import remove_accents
-from parser import Word
+from indicators import indicators, IndicatorCounter
+from parser import Token
 
+
+
+class DicEntry:
+    def __init__(self, tag, vector):
+        self.tag = tag
+        self.vector = vector
 
 
 def load_dic(path):
+    vec_size = 0
+    for key in indicators:
+        vec_size += indicators[key].vec_size
+    print(vec_size)
+
     dictionary = {}
     with open(path, 'r') as f:
         for line in f:
-            fields = line.strip().split(';')
+            fields = line.strip().split(',')
             dictionary[fields[0]] = {}
 
-            for i in range(1, len(fields), 3):
-                dictionary[fields[0]][fields[i]] = ast.literal_eval(fields[i+2])
+            for i in range(int(fields[1])):
+                idx =  2 + i * (vec_size + 1)
+                tag = fields[idx+1]
+                vector = [int(fields[idx + 1 + v]) for v in range(vec_size)]
+                dictionary[fields[0]][fields[idx]] = DicEntry(tag, vector)
+
     return dictionary
 
 
-with open('obj/dictionary.pkl', 'rb') as f:
-    dictionary = pickle.load(f)
+
+dictionary = load_dic(os.path.join(os.path.dirname(__file__), 'obj/dictionary.dic'))
 
 print('Number of without accents words:', len(dictionary))
-
-l = list(dictionary.keys())
-arr = np.array([len(dictionary[k]) for k in l])
+keys = list(dictionary.keys())
+arr = np.array([len(dictionary[k]) for k in keys])
 idx = np.argmax(arr)
-print(dictionary[l[idx]])
+print(dictionary[keys[idx]])
 
 print('Number of words with x variations:')
 for i in range(1, 11):
     print(str(i) + ':', sum(1 if len(dictionary[k]) == i else 0
                             for k in dictionary.keys()))
 
-
-print('Mistakes versions')
+print('Number of mistakes - variations with low accuracy')
 for i in range(2, 10):
     count = 0
     for k in dictionary.keys():
@@ -47,30 +61,33 @@ for i in range(2, 10):
                     # print(dictionary[k])
                     count += 1
                     break
-
-
     print(i, count)
 
 
 
+## FULL DATA EVALUAtion ##
+def get_variation(sentence, word, position):
+    vector = IndicatorCounter()
+    for ind in indicators:
+        ind.increment(sentence, position, vector)
+    vector = vector.counter
+    m = []
+    # print(dictionary[word.lower()])
+    for k, v in dictionary[word.lower()].items():
+        if m == [] or m[0] < v[0]:
+            m = [v[0], k]
+    return m[1]
 
-
-
-dictionary = load_dic('obj/dictionary.dic')
 
 
 def simple_eval(sentence):
     new_sentence = []
-    for word in sentence:
+    for position, word in enumerate(sentence):
         if word is None or word not in dictionary:
             new_sentence.append(word)
             continue
 
-        m = []
-        # print(dictionary[word.lower()])
-        for k, v in dictionary[word.lower()].items():
-            if m == [] or m[0] < v[0]:
-                m = [v[0], k]
+        variation = get_variation(sentence, word, position)
 
         new_word = ''.join(a.upper() if b.isupper() else a
                            for a, b in zip(m[1], word))
@@ -96,6 +113,7 @@ def evaluate(path, sentence_evaluator):
                     except:
                         test_sentence.append(None)
 
+                # Measuring
                 result = sentence_evaluator(test_sentence)
                 correct += sum([1 if (a is None or a == b) else 0
                                 for a, b in zip(result, sentence)])
@@ -117,5 +135,6 @@ def evaluate(path, sentence_evaluator):
 
 
 if __name__ == '__main__':
-    evaluate('../data/syn2015', simple_eval)
+    data_path = os.path.join(os.path.dirname(__file__), '../data/syn2015')
+    evaluate(data_path, simple_eval)
 

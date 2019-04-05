@@ -33,7 +33,7 @@ class Indicator(ABC):
         self.norm_type = norm_type
 
     @abstractmethod
-    def increment(self, sentence, position):
+    def increment(self, sentence, position, token):
         pass
 
     def get_total(self, tokens):
@@ -65,7 +65,7 @@ class OccurenceInd(Indicator):
         super().__init__(name, 1, 'rel')
 
     def increment(self, sentence, position, token):
-        token.counter.increment(self.name, 1);
+        token.counter.increment(self.name, 1)
 
 
 class UppercaseInd(Indicator):
@@ -97,14 +97,15 @@ class SentenceTypeInd(Indicator):
 
     def increment(self, sentence, position, token):
         symbol = None
-        for i in range(1, 3):
+        for i in range(1, min(3, len(sentence)-1)):
             if sentence[-i].word in self.maper:
                 symbol = sentence[-i].word
 
         if symbol is not None:
-            token.counter.increment(self.name, self.maper[symbol]);
+            token.counter.increment(self.name, self.maper[symbol])
         else:
-            print("No correct end symbol found.")
+            pass
+            # print("No correct end symbol found.")
 
 
 
@@ -147,7 +148,7 @@ class IndicatorCounter:
         self.counter[name][0] += 1
 
     def normalize(self, name, total):
-        print(self.counter[name])
+        # print(self.counter[name])
         if total == 0:
             self.counter[name] = [0 for i in self.counter[name]]
         else:

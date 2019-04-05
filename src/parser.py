@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser(
     description="Parse words and create files for application.")
 parser.add_argument(
     '--path',
-    default='../data/syn2015',
+    default=os.path.join(os.path.dirname(__file__), '../data/syn2015'),
     help="Path to extracted Syn2015 file.")
 
 
@@ -68,7 +68,7 @@ class EntryToken(Token):
     def vector(self):
         vector = []
         for ind in indicators:
-            print("Vector:", ind, self.counter.get(ind)[1:])
+            # print("Vector:", ind, self.counter.get(ind)[1:])
             vector.extend(self.counter.get(ind)[1:])
         return vector
 
@@ -111,7 +111,8 @@ def save_words(dictionary):
     """Saving dictionary as:
     noaccents word, variations count, (for each variation: word, tag, vector)"""
     dic = dictionary.dictionary
-    with open('obj/dictionary.dic', 'w') as f:
+    dic_path = os.path.join(os.path.dirname(__file__), 'obj/dictionary.dic')
+    with open(dic_path, 'w') as f:
         for key in sorted(list(dic.keys())):
             dic[key].finalize()
             f.write(','.join([key, str(len(dic[key].tokens))]))
@@ -124,7 +125,7 @@ def save_words(dictionary):
 
 
 def process_sentence(sentence, dictionary):
-    for i, token in enumerate(sentence):
+    for token in sentence:
         if token.tag[0] != 'Z':
             if token.get_word().isalpha():
                 try:
@@ -163,13 +164,13 @@ def words_extract(path):
                 print('Size %r: %r / %r' %
                       (dictionary.size(), i, num_lines), end='\r')
 
-            if i == 10000:
-                break
+            # if i == 10000:
+                # break
 
     print()
     print('Number of words:', dictionary.size())
-    with open('obj/dictionary.pkl', 'wb') as f:
-        pickle.dump(dictionary.dictionary, f, 0)
+    # with open('obj/dictionary.pkl', 'wb') as f:
+        # pickle.dump(dictionary.dictionary, f, 0)
     save_words(dictionary)
 
 
