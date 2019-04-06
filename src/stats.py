@@ -1,11 +1,16 @@
+import csv
+import math
+import numpy as np
 import os
 import pickle
-import numpy as np
-import ast
 
 from alphabet import remove_accents
 from indicators import indicators, IndicatorCounter
 from parser import Token
+
+# TODO:
+#     - masking vectors by indicators
+#     - close distance -> choose by frequency
 
 
 
@@ -23,15 +28,18 @@ def load_dic(path):
 
     dictionary = {}
     with open(path, 'r') as f:
-        for line in f:
-            fields = line.strip().split(',')
-            dictionary[fields[0]] = {}
+        reader = csv.reader(f, delimiter=',')
+        for line in reader:
+            dictionary[line[0]] = {}
 
-            for i in range(int(fields[1])):
-                idx =  2 + i * (vec_size + 1)
-                tag = fields[idx+1]
-                vector = [int(fields[idx + 1 + v]) for v in range(vec_size)]
-                dictionary[fields[0]][fields[idx]] = DicEntry(tag, vector)
+            for i in range(len(line)):
+                print(i, line[i])
+
+            for i in range(int(line[1])):
+                idx =  2 + i * (vec_size + 2)
+                tag = line[idx+1]
+                vector = [float(line[idx + 2 + v]) for v in range(vec_size)]
+                dictionary[line[0]][line[idx]] = DicEntry(tag, vector)
 
     return dictionary
 
@@ -66,18 +74,39 @@ for i in range(2, 10):
 
 
 ## FULL DATA EVALUAtion ##
-def get_variation(sentence, word, position):
-    vector = IndicatorCounter()
-    for ind in indicators:
-        ind.increment(sentence, position, vector)
-    vector = vector.counter
-    m = []
-    # print(dictionary[word.lower()])
-    for k, v in dictionary[word.lower()].items():
-        if m == [] or m[0] < v[0]:
-            m = [v[0], k]
-    return m[1]
+def distance(v1, v2, mask):
+    dist = 0
+    for i in range(len(v1)):
+        dist += mask[i] * ((v1[i] - v2[i]) ** 2)
+    return math.sqrt(dist)
 
+
+class Counter():
+    def __init__(self):
+        self.counter = IndicatorCounter()
+
+    def update(self, sentence, position):
+        for ind in indicators:
+            indicators[ind].increment(sentence, position, self)
+
+    def get_vector(self):
+        return counter.get_vector()
+
+
+def get_variation(sentence, word, position):
+    counter = Counter()
+    counter.update(sentence, position)
+    vector = counter.get_vector()
+
+    mask = [0] + [1] * (len(vector) - 1)
+    if position == 0:
+        mask[1:3] = [0, 0]
+
+    res = []
+    for key, vec in dictionary[word.lower()].items():
+        if res == [] or res[0] < dist(vec, vector, mask):
+            res = [dist(vec, vector, mask), key]
+    return res[1]
 
 
 def simple_eval(sentence):

@@ -154,3 +154,9 @@ class IndicatorCounter:
         else:
             self.counter[name] = [i / total for i in self.counter[name]]
 
+    def get_vector(self):
+        vector = []
+        for ind in indicators:
+            vector.extend(self.counter[ind][1:])
+        return vector
+

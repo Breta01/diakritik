@@ -1,5 +1,6 @@
-import os
 import argparse
+import csv
+import os
 import pickle
 
 from alphabet import remove_accents
@@ -66,11 +67,7 @@ class EntryToken(Token):
             indicators[ind].increment(sentence, position, self)
 
     def vector(self):
-        vector = []
-        for ind in indicators:
-            # print("Vector:", ind, self.counter.get(ind)[1:])
-            vector.extend(self.counter.get(ind)[1:])
-        return vector
+        return self.counter.get_vector()
 
 
 class Entry:
@@ -113,15 +110,17 @@ def save_words(dictionary):
     dic = dictionary.dictionary
     dic_path = os.path.join(os.path.dirname(__file__), 'obj/dictionary.dic')
     with open(dic_path, 'w') as f:
+        writer = csv.writer(
+            f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
         for key in sorted(list(dic.keys())):
             dic[key].finalize()
-            f.write(','.join([key, str(len(dic[key].tokens))]))
+
+            row = [key, str(len(dic[key].tokens))]
             for t_entry in dic[key].tokens.values():
-                f.write(',')
-                f.write(','.join([t_entry.get_word(),
-                                  t_entry.get_tag(),
-                                  ','.join(map(str, t_entry.vector()))]))
-            f.write('\n')
+                row.extend([
+                    t_entry.get_word(), t_entry.get_tag(), *t_entry.vector()])
+            writer.writerow(row)
 
 
 def process_sentence(sentence, dictionary):
@@ -164,8 +163,8 @@ def words_extract(path):
                 print('Size %r: %r / %r' %
                       (dictionary.size(), i, num_lines), end='\r')
 
-            # if i == 10000:
-                # break
+            if i == 10000:
+                break
 
     print()
     print('Number of words:', dictionary.size())
