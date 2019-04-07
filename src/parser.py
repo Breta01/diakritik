@@ -31,11 +31,10 @@ class Token:
         self.fields = fields
         self.word = fields[0].lower()
         self.org_word = fields[0]
-        self.base = fields[1]
+        # self.base = fields[1]
         self.tag = fields[2]
-
         self.speech = speech
-        self.singular = self.tag[3] == 'S' if self.tag[3] != '-' else None
+        # self.singular = self.tag[3] == 'S' if self.tag[3] != '-' else None
 
     def get_rod(self):
         return self.tag[2]
@@ -91,14 +90,15 @@ class Dictionary:
     def __init__(self):
         self.dictionary = {}
 
-    def add_token(self, wa_word, token, sentence):
+    def add_token(self, wa_word, token, sentence, update=True):
         if not wa_word in self.dictionary:
             self.dictionary[wa_word] = Entry(wa_word, token)
         else:
             self.dictionary[wa_word].add_token(token)
 
-        self.dictionary[wa_word].tokens[token.get_word()].update(
-            sentence, token.position)
+        if update:
+            self.dictionary[wa_word].tokens[token.get_word()].update(
+                sentence, token.position)
 
     def size(self):
         return len(self.dictionary)
@@ -132,6 +132,8 @@ def process_sentence(sentence, dictionary):
                 except:
                     continue
                 dictionary.add_token(wa_word, token, sentence)
+        else:
+            dictionary.add_token(token.get_word(), token, sentence, False)
 
 
 def words_extract(path):
@@ -153,9 +155,9 @@ def words_extract(path):
 
             if line[0] != '<':
                 fields = line.split('\t')
-                newToken = Token(fields, position, speech)
-                sentence.append(newToken)
-                if SpeechInd.is_speech(newToken.word):
+                new_token = Token(fields, position, speech)
+                sentence.append(new_token)
+                if SpeechInd.is_speech(new_token.word):
                     speech = not speech
                 position += 1
 
@@ -163,8 +165,8 @@ def words_extract(path):
                 print('Size %r: %r / %r' %
                       (dictionary.size(), i, num_lines), end='\r')
 
-            if i == 10000:
-                break
+            # if i == 10000:
+            #     break
 
     print()
     print('Number of words:', dictionary.size())
