@@ -9,6 +9,7 @@ from indicators import indicators, IndicatorCounter, SpeechInd
 from parser import Token
 
 # TODO:
+#     - Odstranit malo casta slova
 #     - masking vectors by indicators
 #     - close distance -> choose by frequency
 #     - diakritika do slovniku
@@ -79,10 +80,12 @@ def distance(v1, v2, mask):
     # for i in range(len(v1)):
     #     dist += mask[i] * ((v1[i] - v2[i]) ** 2)
     # return dist ** (1/2)
-    minimum = min([abs(v1[i] - v2[i]) if mask[i] == 1 else 100
-                   for i in range(1, len(v1))])
-    return minimum + abs(v1[0] - v2[0])
 
+    # minimum = min([abs(v1[i] - v2[i]) if mask[i] == 1 else 100
+    #                for i in range(1, len(v1))])
+    # return minimum + abs(v1[0] - v2[0])
+
+    return (1 - v1[0])
 
 
 class Counter():

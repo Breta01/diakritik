@@ -1,21 +1,8 @@
 # (occurence, upper, lower, singular, plural, rod ...)
-
-# def add_word(self, word):
-#     # Occurence
-#     self.vector[0] += 1
-#     # Upper/Lower
-#     if word.upper is not None:
-#         self.vector[1 if word.upper else 2] += 1
-#     # Singular/Plural
-#     if word.singular is not None:
-#         self.vector[3 if word.singular else 4] += 1
-#     # Rod
-#     # if word.rod is not None:
-#     #     self.vector[5 + word.rod]
-
 # TODO:
-#    - normalization for other indicators
-#    - contorl speech in sentences
+#     - mnozne/jednotne cislo u predchoziho slova
+#     - vlastnosti nejblizsiho jisteho slova
+#     - vlastnosti podle slovesa
 
 from abc import ABC, abstractmethod
 
@@ -61,7 +48,7 @@ class Indicator(ABC):
 
 
 class OccurenceInd(Indicator):
-    def __init__(self, name="occurence"):
+    def __init__(self, name='occurence'):
         super().__init__(name, 1, 'rel')
 
     def increment(self, sentence, position, token):
@@ -69,25 +56,24 @@ class OccurenceInd(Indicator):
 
 
 class UppercaseInd(Indicator):
-    def __init__(self, name="uppercase"):
-        super().__init__(name, 2, 'single_rel')
+    def __init__(self, name='uppercase'):
+        super().__init__(name, 1, 'single_rel')
 
     def increment(self, sentence, position, token):
-        if (position > 1 or
-            (position == 1 and sentence[0].tag[0] != 'Z')):
+        idx = 0
+        while sentence[idx].tag[0] == 'Z': idx += 1
+
+        if (position > 0 and position >= idx):
             is_upper = sentence[position].org_word[0].isupper()
         else:
             is_upper = None
 
         if is_upper is not None:
-            if is_upper:
-                token.counter.increment(self.name, 1)
-            else:
-                token.counter.increment(self.name, 2)
+            token.counter.increment(self.name, 1, 1 if is_upper else 0)
 
 
 class SentenceTypeInd(Indicator):
-    def __init__(self, name="sentence_type"):
+    def __init__(self, name='sentence_type'):
         super().__init__(name, 3, 'single_rel')
         self.maper = {
             '.': 1,
@@ -108,10 +94,9 @@ class SentenceTypeInd(Indicator):
             # print("No correct end symbol found.")
 
 
-
 class SpeechInd(Indicator):
-    def __init__(self, name="speech"):
-        super().__init__(name, 2, 'single_rel')
+    def __init__(self, name='speech'):
+        super().__init__(name, 1, 'single_rel')
 
     @staticmethod
     def is_speech(word):
@@ -120,16 +105,73 @@ class SpeechInd(Indicator):
         return word in chars
 
     def increment(self, sentence, position, token):
-        idx = 2 if sentence[position].speech else 1
+        token.counter.increment(
+            self.name, 1, 1 if sentence[position].speech else 0)
+
+
+class CommaInd(Indicator):
+    def __init__(self, name='comma'):
+        super().__init__(name, 1, 'single_rel')
+
+    def increment(self, sentence, position, token):
+        comma = False
+        if position != 0:
+            for i in range(position-1, max(0, position-3), -1):
+                if sentence[i].word == ',':
+                    comma = True
+                    break
+
+        token.counter.increment(self.name, 1, 1 if comma else 0)
+
+
+class PositionInd(Indicator):
+    def __init__(self, name='position'):
+        super().__init__(name, 3, 'single_rel')
+
+    def increment(self, sentence, position, token):
+        start = 0
+        end = len(sentence) - 1
+        while start < len(sentence) and sentence[start].tag[0] == 'Z':
+            start += 1
+        while end >= 0 and sentence[end].tag[0] == 'Z':
+            end -= 1
+
+        idx = 2
+        if start < end:
+            if position == start:
+                idx = 0
+            elif position == end:
+                idx = 3
+
         token.counter.increment(self.name, idx)
 
+
+class VerbInd(Indicator):
+    def __init__(self, name='verb'):
+        super().__init__(name, 2, 'single_rel')
+
+    @staticmethod
+    def find_verb(self, sentence, position, token):
+
+
+
+    def increment(self, sentence, position, token):
+        # Rozdelit na vety podle carek, najit sloveso v nejblizsi vete
+        # Urcit vlastnosti sloves
+
+        prob_verb = None
+        for token in sentence:
+            if token.tag[0] == 'V':
+                pass
 
 
 indicators = {
     "occurence": OccurenceInd(),
     "uppercase": UppercaseInd(),
     "sentence_type": SentenceTypeInd(),
-    "speech": SpeechInd()
+    "speech": SpeechInd(),
+    "comma": CommaInd(),
+    "position": PositionInd()
 }
 
 
@@ -142,9 +184,9 @@ class IndicatorCounter:
     def get(self, name):
         return self.counter[name]
 
-    def increment(self, name, idx):
+    def increment(self, name, idx, val=1):
         """Increment indicator and total counter."""
-        self.counter[name][idx] += 1
+        self.counter[name][idx] += val
         self.counter[name][0] += 1
 
     def normalize(self, name, total):
