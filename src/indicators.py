@@ -1,8 +1,5 @@
-# (occurence, upper, lower, singular, plural, rod ...)
 # TODO:
-#     - mnozne/jednotne cislo u predchoziho slova
-#     - vlastnosti nejblizsiho jisteho slova
-#     - vlastnosti podle slovesa
+#    - Return mask z Indicatoru
 
 from abc import ABC, abstractmethod
 
@@ -148,21 +145,84 @@ class PositionInd(Indicator):
 
 class VerbInd(Indicator):
     def __init__(self, name='verb'):
-        super().__init__(name, 2, 'single_rel')
+        super().__init__(name, 7, 'single_rel')
+        self.cislo_map = {'-': 1, 'S': 2, 'P': 3}
+        self.osoba_map = {'-': 4, '1': 5, '2': 6, '3': 7}
 
-    @staticmethod
-    def find_verb(self, sentence, position, token):
+    def find_verb(self, sentence, position):
+        verbs = []
+        for i, w in enumerate(sentence):
+            if w.tag[0] == 'V':
+                verbs.append((i, w))
 
+        # Odstranění infinitivů
+        if len(verbs) > 1:
+            new_verbs = []
+            for v in verbs:
+                if v[1].tag[3] != '-' and v[1].tag[7] != '-':
+                    new_verbs.append(v)
+            verbs = new_verbs
 
+        if len(verbs) == 0:
+            return None
+        if len(verbs) == 1:
+            return verbs[0][1]
+
+        return min(verbs, key=lambda x: abs(x[0] - position))[1]
 
     def increment(self, sentence, position, token):
-        # Rozdelit na vety podle carek, najit sloveso v nejblizsi vete
-        # Urcit vlastnosti sloves
+        prob_verb = self.find_verb(sentence, position)
+        if prob_verb is not None:
+            token.counter.increment(
+                self.name,
+                [self.cislo_map.get(prob_verb.tag[3], 1),
+                 self.osoba_map.get(prob_verb.tag[7], 1)])
 
-        prob_verb = None
-        for token in sentence:
-            if token.tag[0] == 'V':
-                pass
+
+class PrevWordInd(Indicator):
+    def __init__(self, name='prev_word'):
+        super().__init__(name, 22, 'single_rel')
+        self.druh_map = {'-': 1, 'N': 2, 'A': 3, 'P': 4, 'C': 5}
+        self.rod_map = {'-': 6, 'F': 7, 'I': 8, 'M': 9, 'N': 10}
+        self.cislo_map = {'-': 11, 'D': 12, 'P': 13, 'S': 14}
+        self.pad_map = lambda x: 15 + (int(x) if not x in ['-', 'X'] else 0)
+
+    def increment(self, sentence, position, token):
+        if position != 0:
+            tag = sentence[position - 1].tag
+            idx = [self.druh_map.get(tag[0], 1),
+                   self.rod_map.get(tag[2], 6),
+                   self.cislo_map.get(tag[3], 11),
+                   self.pad_map(tag[4])]
+            token.counter.increment(self.name, idx)
+
+
+class NextWordInd(PrevWordInd):
+    def __init__(self, name='next_word'):
+        super().__init__(name)
+
+    def increment(self, sentence, position, token):
+        if position != len(sentence) - 1:
+            tag = sentence[position + 1].tag
+            idx = [self.druh_map.get(tag[0], 1),
+                   self.rod_map.get(tag[2], 6),
+                   self.cislo_map.get(tag[3], 11),
+                   self.pad_map(tag[4])]
+            token.counter.increment(self.name, idx)
+
+
+class PrepositionInd(Indicator):
+    def __init__(self, name='preposition'):
+        super().__init__(name, 8, 'single_rel')
+        self.pad_map = lambda x: 1 + (int(x) if not x in ['-', 'X'] else 0)
+
+    def increment(self, sentence, position, token):
+        if position != 0:
+            for i in range(position-1, max(-1, position-3), -1):
+                if sentence[i].tag[0] == 'R':
+                    token.counter.increment(
+                        self.name, self.pad_map(sentence[i].tag[4]), 1)
+                    break
 
 
 indicators = {
@@ -171,7 +231,11 @@ indicators = {
     "sentence_type": SentenceTypeInd(),
     "speech": SpeechInd(),
     "comma": CommaInd(),
-    "position": PositionInd()
+    "position": PositionInd(),
+    "verb": VerbInd(),
+    "prev_word": PrevWordInd(),
+    "next_word": NextWordInd(),
+    "preposition": PrepositionInd()
 }
 
 
@@ -186,7 +250,10 @@ class IndicatorCounter:
 
     def increment(self, name, idx, val=1):
         """Increment indicator and total counter."""
-        self.counter[name][idx] += val
+        if type(idx) != list:
+            idx = [idx]
+        for i in idx:
+            self.counter[name][i] += val
         self.counter[name][0] += 1
 
     def normalize(self, name, total):

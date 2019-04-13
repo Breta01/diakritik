@@ -16,7 +16,6 @@ from parser import Token
 #     - Rovnou tagovat podle nejpravdepodobnejsi
 
 
-
 class DicEntry:
     def __init__(self, tag, vector):
         self.tag = tag
@@ -44,8 +43,8 @@ def load_dic(path):
     return dictionary
 
 
-
-dictionary = load_dic(os.path.join(os.path.dirname(__file__), 'obj/dictionary.dic'))
+dictionary = load_dic(
+    os.path.join(os.path.dirname(__file__), 'obj/dictionary.dic'))
 
 print('Number of dic entries words:', len(dictionary))
 keys = list(dictionary.keys())
@@ -60,6 +59,7 @@ for i in range(1, 11):
                             for k in dictionary.keys()))
 
 print('Number of mistakes - variations with low accuracy')
+print('Četnost varianty: 1 %')
 for i in range(2, 10):
     count = 0
     for k in dictionary.keys():
@@ -67,10 +67,23 @@ for i in range(2, 10):
             s = sum(map(lambda x: x.vector[0], dictionary[k].values()))
             for v in dictionary[k].values():
                 if v.vector[0] / s < 0.01 and v.vector[0] < 5:
-                    # print(dictionary[k])
                     count += 1
                     break
     print(i, count)
+
+
+print('Četnost varianty: 0.1 %')
+for i in range(2, 10):
+    count = 0
+    for k in dictionary.keys():
+        if len(dictionary[k]) == i:
+            s = sum(map(lambda x: x.vector[0], dictionary[k].values()))
+            for v in dictionary[k].values():
+                if v.vector[0] / s < 0.001 and v.vector[0] < 5:
+                    count += 1
+                    break
+    print(i, count)
+
 
 
 

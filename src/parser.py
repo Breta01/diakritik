@@ -5,17 +5,10 @@ import pickle
 
 from alphabet import remove_accents
 from indicators import indicators, SpeechInd, IndicatorCounter
-# from indicators import Indicator
 
 # TODO:
-#     - odstranit vektroy u slov s jednou variantou
-#     - udělat classy pro vlastnosti
-#     - vlastnosti podle predchoziho slova
-#     - prumerna vlastnost vety
 #     - maskovani vlastnosti
-#     - slovesa, detekce (vlastnosti, ztah ke slovum)
-#     - nejblizsi podstatne jmeno
-#     - Parser?
+#     - Smazat vektory u slov s jednou variantou
 
 parser = argparse.ArgumentParser(
     description="Parse words and create files for application.")
@@ -28,41 +21,32 @@ parser.add_argument(
 class Token:
     def __init__(self, fields, position, speech=False):
         self.position = position
-        self.fields = fields
+        self.fields = fields[:3]
         self.word = fields[0].lower()
         self.org_word = fields[0]
-        # self.base = fields[1]
         self.tag = fields[2]
         self.speech = speech
-        # self.singular = self.tag[3] == 'S' if self.tag[3] != '-' else None
-
-    def get_rod(self):
-        return self.tag[2]
-
-    def get_tag(self):
-        return self.tag
 
     def get_word(self):
         return self.word
 
     def __str__(self):
         return self.word
-        # return ' '.join([self.word, self.tag])
 
     def __repr__(self):
         return self.word + ' - ' + self.tag[0]
 
 
-# Entry token indicators vals - udrzuji jednotlive hodnoty
-# Indicatory, staticke, ktere spocitaji stat na vete a incrementuji token
 class EntryToken(Token):
+    """Entry Token udržuje vlastnosti spocitane indicatory pro token,
+    Při opakovaném nalezení se vždy updatuje.
+    """
     def __init__(self, token):
         super().__init__(token.fields, token.position)
         self.counter = IndicatorCounter()
 
     def update(self, sentence, position):
         for ind in indicators:
-            # print("Updating:", ind)
             indicators[ind].increment(sentence, position, self)
 
     def vector(self):
@@ -116,10 +100,15 @@ def save_words(dictionary):
         for key in sorted(list(dic.keys())):
             dic[key].finalize()
 
-            row = [key, str(len(dic[key].tokens))]
-            for t_entry in dic[key].tokens.values():
-                row.extend([
-                    t_entry.get_word(), t_entry.get_tag(), *t_entry.vector()])
+            if len(dic[key].tokens) == 1:
+                t_entry = list(dic[key].tokens.values())[0]
+                row = [key, 1, t_entry.get_word(), t_entry.tag]
+            else:
+                row = [key, str(len(dic[key].tokens))]
+                for t_entry in sorted(dic[key].tokens.values(),
+                                      key=lambda x: 1-x.vector()[0]):
+                    row.extend([
+                        t_entry.get_word(), t_entry.tag, *t_entry.vector()])
             writer.writerow(row)
 
 
@@ -165,8 +154,8 @@ def words_extract(path):
                 print('Size %r: %r / %r' %
                       (dictionary.size(), i, num_lines), end='\r')
 
-            # if i == 10000:
-            #     break
+            if i == 100000:
+                break
 
     print()
     print('Number of words:', dictionary.size())
