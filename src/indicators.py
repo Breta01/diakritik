@@ -58,7 +58,8 @@ class UppercaseInd(Indicator):
 
     def increment(self, sentence, position, token):
         idx = 0
-        while sentence[idx].tag[0] == 'Z': idx += 1
+        while idx < len(sentence) and sentence[idx].tag[0] == 'Z':
+            idx += 1
 
         if (position > 0 and position >= idx):
             is_upper = sentence[position].org_word[0].isupper()
@@ -243,7 +244,7 @@ class IndicatorCounter:
     def __init__(self):
         self.counter = {}
         for ind in indicators:
-            self.counter[ind] = indicators[ind].get_vec()
+           self.counter[ind] = indicators[ind].get_vec()
 
     def get(self, name):
         return self.counter[name]
@@ -264,7 +265,7 @@ class IndicatorCounter:
             self.counter[name] = [i / total for i in self.counter[name]]
 
     def get_vector(self):
-        vector = []
+        vector = [self.counter["occurence"][0]]
         for ind in indicators:
             vector.extend(self.counter[ind][1:])
         return vector

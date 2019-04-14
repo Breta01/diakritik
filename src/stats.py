@@ -12,8 +12,8 @@ from parser import Token
 #     - Odstranit malo casta slova
 #     - masking vectors by indicators
 #     - close distance -> choose by frequency
-#     - diakritika do slovniku
 #     - Rovnou tagovat podle nejpravdepodobnejsi
+#     - Mřit jen nerozhodná slova
 
 
 class DicEntry:
@@ -34,11 +34,14 @@ def load_dic(path):
         for line in reader:
             dictionary[line[0]] = {}
 
-            for i in range(int(line[1])):
-                idx =  2 + i * (vec_size + 2)
-                tag = line[idx+1]
-                vector = [float(line[idx + 2 + v]) for v in range(vec_size)]
-                dictionary[line[0]][line[idx]] = DicEntry(tag, vector)
+            if int(line[1]) == 1:
+                dictionary[line[0]][line[2]] = DicEntry(line[3], None)
+            else:
+                for i in range(int(line[1])):
+                    idx =  2 + i * (vec_size + 2)
+                    tag = line[idx+1]
+                    vector = [float(line[idx + 2 + v]) for v in range(vec_size)]
+                    dictionary[line[0]][line[idx]] = DicEntry(tag, vector)
 
     return dictionary
 
@@ -64,27 +67,23 @@ for i in range(2, 10):
     count = 0
     for k in dictionary.keys():
         if len(dictionary[k]) == i:
-            s = sum(map(lambda x: x.vector[0], dictionary[k].values()))
             for v in dictionary[k].values():
-                if v.vector[0] / s < 0.01 and v.vector[0] < 5:
+                if v.vector[1] < 0.01 and v.vector[0] < 5:
                     count += 1
                     break
     print(i, count)
 
 
-print('Četnost varianty: 0.1 %')
+print('Četnost varianty: 0.5 %')
 for i in range(2, 10):
     count = 0
     for k in dictionary.keys():
         if len(dictionary[k]) == i:
-            s = sum(map(lambda x: x.vector[0], dictionary[k].values()))
             for v in dictionary[k].values():
-                if v.vector[0] / s < 0.001 and v.vector[0] < 5:
+                if v.vector[1] < 0.005 and v.vector[0] < 5:
                     count += 1
                     break
     print(i, count)
-
-
 
 
 ## FULL DATA EVALUAtion ##
@@ -94,11 +93,11 @@ def distance(v1, v2, mask):
     #     dist += mask[i] * ((v1[i] - v2[i]) ** 2)
     # return dist ** (1/2)
 
-    # minimum = min([abs(v1[i] - v2[i]) if mask[i] == 1 else 100
-    #                for i in range(1, len(v1))])
-    # return minimum + abs(v1[0] - v2[0])
+    minimum = min([abs(v1[i] - v2[i]) if mask[i] == 1 else 100
+                   for i in range(1, len(v1))])
+    return minimum + abs(v1[0] - v2[0])
 
-    return (1 - v1[0])
+    # return (1 - v1[0])
 
 
 class Counter():
@@ -126,7 +125,7 @@ def get_variation(sentence, word, position):
     # mask = [0] + [1] * (len(vector) - 1)
     mask = [1] * (len(vector))
     if position == 0 or (position == 1 and sentence[0].tag[0] == 'Z'):
-        mask[1:3] = [0, 0]
+        mask[2] = 0
 
     res = []
     for key, item in dictionary[word.word].items():
@@ -186,6 +185,8 @@ def evaluate(path, sentence_evaluator):
 
             if line[0] != '<':
                 fields = line.split('\t')
+                # Revrite tag
+                # fields[2] = dictionary[fields[0].lower]
                 new_token = Token(fields, position, speech)
                 sentence.append(new_token)
                 if SpeechInd.is_speech(new_token.word):

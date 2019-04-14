@@ -154,8 +154,9 @@ def words_extract(path):
                 print('Size %r: %r / %r' %
                       (dictionary.size(), i, num_lines), end='\r')
 
-            if i == 100000:
-                break
+            # Debuging:
+            # if i == 100000:
+            #     break
 
     print()
     print('Number of words:', dictionary.size())
