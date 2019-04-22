@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Diakritik
+GenericName=Diakritik
+Comment=Program na doplňování diakritiky do vět
+Icon=diakritik_icon
+StartupNotify=true
+Exec=@bindir@/diakritik %U
+Categories=GNOME;GTK;Utility
+Name[en_US]=diakritik.desktop

@@ -108,7 +108,9 @@ def save_words(dictionary):
                 for t_entry in sorted(dic[key].tokens.values(),
                                       key=lambda x: 1-x.vector()[0]):
                     row.extend([
-                        t_entry.get_word(), t_entry.tag, *t_entry.vector()])
+                        t_entry.get_word(),
+                        t_entry.tag,
+                        *map(lambda x: "%.2g" % x, t_entry.vector())])
             writer.writerow(row)
 
 
@@ -155,7 +157,7 @@ def words_extract(path):
                       (dictionary.size(), i, num_lines), end='\r')
 
             # Debuging:
-            # if i == 100000:
+            # if i == 10000:
             #     break
 
     print()
