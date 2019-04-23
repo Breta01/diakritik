@@ -5,21 +5,34 @@
 class MainWindow {
   public:
     MainWindow();
-    void run(int argc, char **argv);
+    void run(int argc, char **argv) {
+      app->run(*window, argc, argv);
+    };
 
   protected:
     Glib::RefPtr<Gtk::Application> app;
     Glib::RefPtr<Gtk::Builder> builder;
-    Gtk::Window* window = nullptr;
+    Glib::RefPtr<Gtk::TextBuffer> buffer;
+    Glib::RefPtr<Gtk::Clipboard> clipboard;
+
+    Gtk::ApplicationWindow* window = nullptr;
+    Gtk::AboutDialog* aboutDialog = nullptr;
+    Gtk::TextView* textView = nullptr;
 
     void openFile();
     void saveFile();
     void clear();
-    void exit();
+    void copyAll( );
+    void about();
+    void paste() { textView->get_buffer()->paste_clipboard(clipboard); }
+    void exit() { window->close(); }
 };
 
+
 MainWindow::MainWindow() {
-  app = Gtk::Application::create("org.breta.diakritik");
+  app = Gtk::Application::create("com.bretahajek.diakritik");
+  clipboard = Gtk::Clipboard::get();
+
   builder = Gtk::Builder::create();
   try {
     builder->add_from_file("main.glade");
@@ -31,39 +44,36 @@ MainWindow::MainWindow() {
     std::cerr << "BuilderError: " << ex.what() << std::endl;
   }
 
+  // Widgets
+  builder->get_widget("about_dialog", aboutDialog);
+  builder->get_widget("text_view", textView);
+  builder->get_widget("window", window);
+
   // Menu
   Gtk::ImageMenuItem* button = nullptr;
   builder->get_widget("exit_button", button);
   button->signal_activate().connect(
     sigc::mem_fun(*this, &MainWindow::exit));
-
-  builder->get_widget("window", window);
+  builder->get_widget("about_button", button);
+  button->signal_activate().connect(
+    sigc::mem_fun(*this, &MainWindow::about));
+  builder->get_widget("paste_button", button);
+  button->signal_activate().connect(
+    sigc::mem_fun(*this, &MainWindow::paste));
 }
 
-void MainWindow::exit() {
-  delete window;
+void MainWindow::about() {
+  if (aboutDialog) {
+    aboutDialog->run();
+    aboutDialog->close();
+  }
 }
 
-void MainWindow::run(int argc, char **argv) {
-  app->run(*window, argc, argv);
-}
-
-// static void on_button_clicked() {
-//   if(pDialog)
-
-// }
 
 int main (int argc, char **argv) {
   MainWindow window;
   window.run(argc, argv);
-  // if(pDialog) {
-  //   //Get the GtkBuilder-instantiated Button, and connect a signal handler:
-  //   Gtk::Button* pButton = nullptr;
-  //   builder->get_widget("quit_button", pButton);
-  //   if(pButton) {
-  //     pButton->signal_clicked().connect( sigc::ptr_fun(on_button_clicked) );
-  //   }
-  // }
+
 
   return 0;
 }

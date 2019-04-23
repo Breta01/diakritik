@@ -86,25 +86,7 @@ Author: Břetislav Hájek
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkImageMenuItem">
-                        <property name="label">gtk-new</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem">
                         <property name="label">gtk-open</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem">
-                        <property name="label">gtk-save</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -128,10 +110,10 @@ Author: Břetislav Hájek
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="exit_button">
+                        <property name="label">gtk-quit</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_stock">True</property>
-                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                   </object>
@@ -157,7 +139,7 @@ Author: Břetislav Hájek
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem">
+                      <object class="GtkImageMenuItem" id="paste_button">
                         <property name="label">gtk-paste</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -189,7 +171,7 @@ Author: Břetislav Hájek
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkImageMenuItem">
+                      <object class="GtkImageMenuItem" id="about_button">
                         <property name="label">gtk-about</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -285,7 +267,7 @@ Author: Břetislav Hájek
           </packing>
         </child>
         <child>
-          <object class="GtkTextView">
+          <object class="GtkTextView" id="text_view">
             <property name="width_request">300</property>
             <property name="height_request">200</property>
             <property name="visible">True</property>
@@ -300,20 +282,22 @@ Author: Břetislav Hájek
       </object>
     </child>
   </object>
-  <object class="GtkImage" id="image5">
-    <property name="visible">True</property>
+  <object class="GtkAboutDialog" id="about_dialog">
     <property name="can_focus">False</property>
-    <property name="stock">gtk-close</property>
-    <property name="icon_size">5</property>
-  </object>
-  <object class="GtkDialog">
-    <property name="can_focus">False</property>
-    <property name="title" translatable="yes">About</property>
-    <property name="default_width">320</property>
-    <property name="default_height">220</property>
+    <property name="resizable">False</property>
+    <property name="modal">True</property>
+    <property name="destroy_with_parent">True</property>
     <property name="icon">diakritik_icon.png</property>
     <property name="type_hint">dialog</property>
-    <child>
+    <property name="transient_for">window</property>
+    <property name="program_name">Diakritik</property>
+    <property name="comments" translatable="yes">Aplikace na automatické doplňování diakritiky do textů.
+Tato aplikace vznikla jako zápočtový program.</property>
+    <property name="website">https://bretahajek.com</property>
+    <property name="authors">Břetislav Hájek</property>
+    <property name="logo">diakritik_icon.png</property>
+    <property name="license_type">mit-x11</property>
+    <child type="titlebar">
       <placeholder/>
     </child>
     <child internal-child="vbox">
@@ -326,21 +310,10 @@ Author: Břetislav Hájek
             <property name="can_focus">False</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkButton">
-                <property name="label" translatable="yes">Close</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="margin_right">2</property>
-                <property name="margin_bottom">2</property>
-                <property name="image">image5</property>
-                <property name="always_show_image">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
             </child>
           </object>
           <packing>
@@ -350,39 +323,7 @@ Author: Břetislav Hájek
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin_top">50</property>
-            <property name="label" translatable="yes">Diakritik</property>
-            <attributes>
-              <attribute name="font-desc" value="Sans Bold 22"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="halign">center</property>
-            <property name="margin_left">50</property>
-            <property name="margin_right">50</property>
-            <property name="margin_bottom">24</property>
-            <property name="label" translatable="yes">Aplikace na automatické doplňování diakritiky do textů.
-Tato aplikace vznikla jako zápočtový program (2019)
-Autor: Břetislav Hájek</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="padding">5</property>
-            <property name="position">2</property>
-          </packing>
+          <placeholder/>
         </child>
       </object>
     </child>
