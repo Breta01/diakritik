@@ -32,11 +32,6 @@ Author: Břetislav Hájek
   <!-- interface-name Diakritik -->
   <!-- interface-description Program na dopl\305\210ov\303\241n\303\255 diakritiky do v\304\233t -->
   <!-- interface-authors B\305\231etislav H\303\241jek -->
-  <object class="GtkImage">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-missing-image</property>
-  </object>
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -61,7 +56,7 @@ Author: Břetislav Hájek
     <property name="stock">gtk-save</property>
     <property name="icon_size">3</property>
   </object>
-  <object class="GtkApplicationWindow">
+  <object class="GtkApplicationWindow" id="window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Diakritik</property>
     <property name="default_width">600</property>
@@ -132,12 +127,11 @@ Author: Břetislav Hájek
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem">
-                        <property name="label">gtk-quit</property>
+                      <object class="GtkImageMenuItem" id="exit_button">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <property name="always_show_image">True</property>
                       </object>
                     </child>
                   </object>
@@ -159,7 +153,6 @@ Author: Břetislav Hájek
                         <property name="label" translatable="yes">Copy All</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="image">__glade_unnamed_37</property>
                         <property name="use_stock">False</property>
                       </object>
                     </child>
@@ -301,6 +294,93 @@ Author: Břetislav Hájek
           <packing>
             <property name="expand">True</property>
             <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkImage" id="image5">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-close</property>
+    <property name="icon_size">5</property>
+  </object>
+  <object class="GtkDialog">
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">About</property>
+    <property name="default_width">320</property>
+    <property name="default_height">220</property>
+    <property name="icon">diakritik_icon.png</property>
+    <property name="type_hint">dialog</property>
+    <child>
+      <placeholder/>
+    </child>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">Close</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="margin_right">2</property>
+                <property name="margin_bottom">2</property>
+                <property name="image">image5</property>
+                <property name="always_show_image">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_top">50</property>
+            <property name="label" translatable="yes">Diakritik</property>
+            <attributes>
+              <attribute name="font-desc" value="Sans Bold 22"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="halign">center</property>
+            <property name="margin_left">50</property>
+            <property name="margin_right">50</property>
+            <property name="margin_bottom">24</property>
+            <property name="label" translatable="yes">Aplikace na automatické doplňování diakritiky do textů.
+Tato aplikace vznikla jako zápočtový program (2019)
+Autor: Břetislav Hájek</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="padding">5</property>
             <property name="position">2</property>
           </packing>
         </child>
