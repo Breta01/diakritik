@@ -85,7 +85,7 @@ Author: Břetislav Hájek
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkImageMenuItem">
+                      <object class="GtkImageMenuItem" id="open_button1">
                         <property name="label">gtk-open</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -94,7 +94,7 @@ Author: Břetislav Hájek
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem">
+                      <object class="GtkImageMenuItem" id="save_button1">
                         <property name="label">gtk-save-as</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -113,6 +113,7 @@ Author: Břetislav Hájek
                         <property name="label">gtk-quit</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -131,7 +132,7 @@ Author: Břetislav Hájek
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkImageMenuItem">
+                      <object class="GtkImageMenuItem" id="copy_button1">
                         <property name="label" translatable="yes">Copy All</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -148,7 +149,7 @@ Author: Břetislav Hájek
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem">
+                      <object class="GtkImageMenuItem" id="clear_button">
                         <property name="label">gtk-clear</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -196,7 +197,7 @@ Author: Břetislav Hájek
             <property name="can_focus">False</property>
             <property name="layout_style">start</property>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="open_button2">
                 <property name="label" translatable="yes">Open</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -212,7 +213,7 @@ Author: Břetislav Hájek
               </packing>
             </child>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="save_button2">
                 <property name="label" translatable="yes">Save As</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -228,7 +229,7 @@ Author: Břetislav Hájek
               </packing>
             </child>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="copy_button2">
                 <property name="label" translatable="yes">Copy All</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -244,7 +245,7 @@ Author: Břetislav Hájek
               </packing>
             </child>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="apply_button">
                 <property name="label" translatable="yes">Apply</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -267,11 +268,20 @@ Author: Břetislav Hájek
           </packing>
         </child>
         <child>
-          <object class="GtkTextView" id="text_view">
-            <property name="width_request">300</property>
-            <property name="height_request">200</property>
+          <object class="GtkScrolledWindow">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="shadow_type">in</property>
+            <property name="propagate_natural_width">True</property>
+            <property name="propagate_natural_height">True</property>
+            <child>
+              <object class="GtkTextView" id="text_view">
+                <property name="width_request">300</property>
+                <property name="height_request">200</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+              </object>
+            </child>
           </object>
           <packing>
             <property name="expand">True</property>
