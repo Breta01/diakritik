@@ -3,6 +3,8 @@
 #include <fstream>
 #include <string>
 
+#include "data.h"
+
 
 class MainWindow {
   public:
@@ -32,6 +34,7 @@ class MainWindow {
 
 
 MainWindow::MainWindow() {
+  Data data = Data("../obj/dictionary.dic");
   app = Gtk::Application::create("com.bretahajek.diakritik");
   clipboard = Gtk::Clipboard::get();
 
