@@ -25,7 +25,7 @@ std::string Data::unquote(std::string s, char quotechar) {
 Data::dataEntry Data::processLine(std::string line,
                                   char delimeter,
                                   char quotechar) {
-  dataEntry de;
+  dataEntry entry;
   bool quote = false;
   int start = -1;
   std::vector<std::string> split;
@@ -33,48 +33,54 @@ Data::dataEntry Data::processLine(std::string line,
   for (u_int i = 0; i < line.length(); i++) {
     if (start == -1 && line[i] == quotechar) {
       quote = true;
-    } else {
+    }
+
+    if ((start != -1 && line[i] == quotechar)
+        && (i+1 >= line.length() || line[i+1] != quotechar)) {
       quote = false;
     }
 
-    if (start != -1 && line[i] == quotechar && line[i+1] != quotechar)
-      quote = false;
-
-    if (start == -1)
+    if (start == -1) {
       start = i;
+    }
 
     if (!quote && line[i] == delimeter) {
       split.push_back(line.substr(start, i - start));
       start = -1;
     }
   }
+  split.push_back(line.substr(start, line.length() - 1 - start));
 
-  de.wa_word = unquote(split[0], quotechar);
-  for (u_int i = 0; i < split.size(); i++)
-    std::cout << i << ": " << split[i] << std::endl;
+
+  entry.wa_word = unquote(split[0], quotechar);
   int count = std::stoi(split[1]);
-  std::vector<variation> vars(count);
+  std::vector<variant> variants(count);
 
   for (int i = 0; i < count; i++) {
-    std::cout << "TODO: load vector" << std::endl;
+    variants[i].word = unquote(split[2 + i*(VEC_LENGTH + 2)]);
+    variants[i].tag = unquote(split[2 + i*(VEC_LENGTH + 2) + 1]);
 
+    if (count > 1) {
+      for (int x = 0; x < VEC_LENGTH; x++) {
+        variants[i].vec[x] = std::stof(split[4 + i*(VEC_LENGTH + 2) + x]);
+      }
+    }
   }
 
-  return de;
+  entry.vars = variants;
+
+  return entry;
 }
 
 
 void Data::loadData(char delimeter, char quotechar) {
   std::ifstream file(csvFileName);
   std::string line = "";
-  // while (getline(file, line))
-  //   numLines++;
 
-  std::unordered_map<std::string, std::vector<variation>> dataMap;
+  dataMap.clear();
 
-  std::string wa_word;
   while (getline(file, line)) {
-    dataEntry de = processLine(line, delimeter, quotechar);
-    dataMap[de.wa_word] = de.vars;
+    dataEntry entry = processLine(line, delimeter, quotechar);
+    dataMap[entry.wa_word] = entry.vars;
   }
 }

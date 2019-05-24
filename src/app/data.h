@@ -4,7 +4,7 @@
 
 const int VEC_LENGTH = 70;
 
-struct variation {
+struct variant {
   std::string word;
   std::string tag;
   float vec[VEC_LENGTH];
@@ -13,10 +13,11 @@ struct variation {
 
 class Data {
   std::string csvFileName;
+  std::unordered_map<std::string, std::vector<variant>> dataMap;
 
   struct dataEntry {
     std::string wa_word;
-    std::vector<variation> vars;
+    std::vector<variant> vars;
   };
 
   public:

@@ -90,7 +90,7 @@ class Dictionary:
 
 def save_words(dictionary):
     """Saving dictionary as:
-    noaccents word, variations count, (for each variation: word, tag, vector)"""
+    noaccents word, variants count, (for each variant: word, tag, vector)"""
     dic = dictionary.dictionary
     dic_path = os.path.join(os.path.dirname(__file__), 'obj/dictionary.dic')
     with open(dic_path, 'w') as f:

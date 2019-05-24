@@ -6,6 +6,13 @@
 #include "data.h"
 
 
+/* TODO:
+       - Asynchroní načítání dat - nějaký load bar
+       - Tlačítko "apply" a zracování textu
+*/
+
+
+
 class MainWindow {
   public:
     MainWindow();
@@ -54,6 +61,8 @@ MainWindow::MainWindow() {
   builder->get_widget("window", window);
   builder->get_widget("text_view", textView);
   buffer = textView->get_buffer();
+
+
 
   // Menu
   Gtk::ImageMenuItem* mBtn;

@@ -6,6 +6,9 @@ DEPDIR = .deps
 CXXFLAGS = `pkg-config --cflags gtkmm-3.0` -std=c++17 -Wall -g
 LIBS = `pkg-config --libs gtkmm-3.0`
 
+
+build-run: all run
+
 all: $(PROGRAM)
 
 -include $(OBJS:%.o=$(DEPDIR)/%.Po)
@@ -21,13 +24,13 @@ $(PROGRAM): $(OBJS)
 clean:
 	rm -f $(OBJS)
 	rm -f $(PROGRAM)
+	rm -rf $(DEPDIR)
 
 install-desktop-file:
 	@mkdir -p ~/.local/share/applications
 	sed -e "s#@bindir@#$$PWD#" diakritik.desktop > ~/.local/share/applications/$(PROGRAM).desktop
 	@mkdir -p ~/.local/share/icons/hicolor/48x48/apps
 	cp diakritik_icon.png ~/.local/share/icons/hicolor/48x48/apps
-
 
 run:
 	./diakritik
