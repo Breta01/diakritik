@@ -7,6 +7,25 @@
 #include "data.h"
 
 
+std::vector<variant>& Data::getWord(std::string word) {
+  return dataMap[word];
+}
+
+
+void Data::loadData(char delimeter, char quotechar) {
+  /* Načtení data z CSV souboru */
+  std::ifstream file(csvFileName);
+  std::string line = "";
+
+  dataMap.clear();
+
+  while (getline(file, line)) {
+    dataEntry entry = processLine(line, delimeter, quotechar);
+    dataMap[entry.wa_word] = entry.vars;
+  }
+}
+
+
 std::string Data::unquote(std::string s, char quotechar) {
   if (s[0] == quotechar)
     s = s.substr(1, s.length() - 2);
@@ -25,6 +44,7 @@ std::string Data::unquote(std::string s, char quotechar) {
 Data::dataEntry Data::processLine(std::string line,
                                   char delimeter,
                                   char quotechar) {
+  /* Načítání jednotlivých řádků z data filu */
   dataEntry entry;
   bool quote = false;
   int start = -1;
@@ -70,17 +90,4 @@ Data::dataEntry Data::processLine(std::string line,
   entry.vars = variants;
 
   return entry;
-}
-
-
-void Data::loadData(char delimeter, char quotechar) {
-  std::ifstream file(csvFileName);
-  std::string line = "";
-
-  dataMap.clear();
-
-  while (getline(file, line)) {
-    dataEntry entry = processLine(line, delimeter, quotechar);
-    dataMap[entry.wa_word] = entry.vars;
-  }
 }

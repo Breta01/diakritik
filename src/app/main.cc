@@ -3,20 +3,19 @@
 #include <fstream>
 #include <string>
 
-#include "data.h"
+#include "parser.h"
 
 
 /* TODO:
        - Asynchroní načítání dat - nějaký load bar
-       - Tlačítko "apply" a zracování textu
+       - Tlačítko "apply" - načítání
 */
-
 
 
 class MainWindow {
   public:
     MainWindow();
-    void run(int argc, char **argv) { app->run(*window, argc, argv); };
+    void run(int argc, char **argv);
 
   protected:
     Glib::RefPtr<Gtk::Application> app;
@@ -28,20 +27,23 @@ class MainWindow {
     Gtk::AboutDialog* aboutDialog = nullptr;
     Gtk::TextView* textView = nullptr;
 
-    void apply() { std::cout << "In progress" << std::endl; }
+    Parser* parser;
+
+    void apply();
     // Hotove:
     void openFile();
     void saveFile();
     void about();
-    void copyAll() { clipboard->set_text(buffer->get_text()); }
+    void copyAll() { clipboard->set_text(buffer->get_text()); };
     void clear() { buffer->set_text(""); };
-    void paste() { buffer->paste_clipboard(clipboard); }
-    void exit() { window->close(); }
+    void paste() { buffer->paste_clipboard(clipboard); };
+    void exit() { window->close(); };
+
+    void loadData();
 };
 
 
 MainWindow::MainWindow() {
-  Data data = Data("../obj/dictionary.dic");
   app = Gtk::Application::create("com.bretahajek.diakritik");
   clipboard = Gtk::Clipboard::get();
 
@@ -61,8 +63,6 @@ MainWindow::MainWindow() {
   builder->get_widget("window", window);
   builder->get_widget("text_view", textView);
   buffer = textView->get_buffer();
-
-
 
   // Menu
   Gtk::ImageMenuItem* mBtn;
@@ -101,8 +101,45 @@ MainWindow::MainWindow() {
   builder->get_widget("apply_button", btn);
   btn->signal_clicked().connect(
     sigc::mem_fun(*this, &MainWindow::apply));
-
 }
+
+
+void MainWindow::run(int argc, char** argv) {
+  if (Glib::thread_supported()) {
+    Glib::thread_init();
+    Glib::Thread::create(sigc::mem_fun(*this, &MainWindow::loadData), true);
+  } else {
+    std::cout << "Vlákna nejsou podporovaná!" << std::endl;
+    std::cout << "Aplikace se bude načítat déle." << std::endl;
+    loadData();
+  }
+  app->run(*window, argc, argv);
+}
+
+
+void MainWindow::loadData() {
+  std::cout << "Loading data: " << std::flush;
+  parser = new Parser("../obj/dictionary.dic");
+
+  // Aktivace tlačítka "apply"
+  std::cout << "finished!" << std::endl;
+  Gtk::Button* btn;
+  builder->get_widget("apply_button", btn);
+  btn->set_sensitive(true);
+  Gtk::Widget* widget;
+  builder->get_widget("apply_button_spinner", widget);
+  widget->set_visible(false);
+  builder->get_widget("apply_button_icon", widget);
+  widget->set_visible(true);
+}
+
+
+void MainWindow::apply() {
+  std::string text = buffer->get_text();
+  parser->processText(text);
+  buffer->set_text(text);
+}
+
 
 void MainWindow::about() {
   if (aboutDialog) {
@@ -110,6 +147,7 @@ void MainWindow::about() {
     aboutDialog->close();
   }
 }
+
 
 void MainWindow::saveFile() {
   Gtk::FileChooserDialog dialog("File Select", Gtk::FILE_CHOOSER_ACTION_SAVE);
@@ -134,6 +172,7 @@ void MainWindow::saveFile() {
     break;
   }
 }
+
 
 void MainWindow::openFile() {
   Gtk::FileChooserDialog dialog("File Select", Gtk::FILE_CHOOSER_ACTION_OPEN);

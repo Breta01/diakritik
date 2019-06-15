@@ -1,14 +1,12 @@
 import argparse
 import csv
 import os
-import pickle
 
 from alphabet import remove_accents
 from indicators import indicators, SpeechInd, IndicatorCounter
 
 # TODO:
 #     - maskovani vlastnosti
-#     - Smazat vektory u slov s jednou variantou
 
 parser = argparse.ArgumentParser(
     description="Parse words and create files for application.")
@@ -162,8 +160,6 @@ def words_extract(path):
 
     print()
     print('Number of words:', dictionary.size())
-    # with open('obj/dictionary.pkl', 'wb') as f:
-        # pickle.dump(dictionary.dictionary, f, 0)
     save_words(dictionary)
 
 
