@@ -91,7 +91,7 @@ def save_words(dictionary):
     noaccents word, variants count, (for each variant: word, tag, vector)"""
     dic = dictionary.dictionary
     dic_path = os.path.join(os.path.dirname(__file__), 'obj/dictionary.dic')
-    with open(dic_path, 'w') as f:
+    with open(dic_path, 'w', encoding='utf-8') as f:
         writer = csv.writer(
             f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 

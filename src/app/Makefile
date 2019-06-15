@@ -1,6 +1,6 @@
 CXX ?= g++
 PROGRAM = diakritik
-CXXFILES = main.cc data.cc parser.cc
+CXXFILES = main.cc data.cc parser.cc indicators.cc
 OBJS = $(CXXFILES:.cc=.o)
 DEPDIR = .deps
 CXXFLAGS = `pkg-config --cflags gtkmm-3.0` -std=c++17 -Wall -g

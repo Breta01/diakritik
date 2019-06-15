@@ -7,8 +7,14 @@
 #include "data.h"
 
 
-std::vector<variant>& Data::getWord(std::string word) {
-  return dataMap[word];
+std::vector<variant>* Data::getWord(std::string word) {
+  auto element = dataMap.find(word);
+
+  if (element == dataMap.end()) {
+    return nullptr;
+  } else {
+    return &(element->second);
+  }
 }
 
 

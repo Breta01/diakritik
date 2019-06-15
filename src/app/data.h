@@ -29,7 +29,7 @@ class Data {
       loadData();
     }
 
-    std::vector<variant>& getWord(std::string word);
+    std::vector<variant>* getWord(std::string word);
 
   private:
     void loadData(char delimeter=',', char quotechar='"');
