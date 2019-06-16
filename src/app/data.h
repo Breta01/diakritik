@@ -5,18 +5,12 @@
 #include <unordered_map>
 #include <vector>
 
-const int VEC_LENGTH = 70;
-
-struct variant {
-  std::string word;
-  std::string tag;
-  float vec[VEC_LENGTH];
-};
+#include "hashmap.h"
 
 
 class Data {
   std::string csvFileName;
-  std::unordered_map<std::string, std::vector<variant>> dataMap;
+  HashMap dataMap;
 
   struct dataEntry {
     std::string wa_word;
@@ -32,11 +26,10 @@ class Data {
     std::vector<variant>* getWord(std::string word);
 
   private:
-    void loadData(char delimeter=',', char quotechar='"');
-    dataEntry processLine(std::string line,
-                          char delimeter,
-                          char quotechar);
-    std::string unquote(std::string s, char quotechar='"');
+    void loadData(char delimeter=' ', char quotechar='"');
+    void processLine(std::string& line,
+                     char delimeter);
+    /* std::string unquote(std::string& s, char quotechar='"'); */
 };
 
 

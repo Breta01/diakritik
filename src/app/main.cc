@@ -6,12 +6,6 @@
 #include "parser.h"
 
 
-/* TODO:
-       - Asynchroní načítání dat - nějaký load bar
-       - Tlačítko "apply" - načítání
-*/
-
-
 class MainWindow {
   public:
     MainWindow();
@@ -30,7 +24,6 @@ class MainWindow {
     Parser* parser;
 
     void apply();
-    // Hotove:
     void openFile();
     void saveFile();
     void about();
@@ -118,6 +111,7 @@ void MainWindow::run(int argc, char** argv) {
 
 
 void MainWindow::loadData() {
+  auto start = std::chrono::steady_clock::now();
   std::cout << "Loading data: " << std::flush;
   parser = new Parser("../obj/dictionary.dic");
 
@@ -131,6 +125,12 @@ void MainWindow::loadData() {
   widget->set_visible(false);
   builder->get_widget("apply_button_icon", widget);
   widget->set_visible(true);
+
+  auto end = std::chrono::steady_clock::now();
+
+  std::cout << "Doba načítání: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+            << " ms" << std::endl;
 }
 
 

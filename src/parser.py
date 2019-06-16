@@ -93,7 +93,7 @@ def save_words(dictionary):
     dic_path = os.path.join(os.path.dirname(__file__), 'obj/dictionary.dic')
     with open(dic_path, 'w', encoding='utf-8') as f:
         writer = csv.writer(
-            f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            f, delimiter=' ', quotechar='"', quoting=csv.QUOTE_NONE)
 
         for key in sorted(list(dic.keys())):
             dic[key].finalize()

@@ -37,6 +37,4 @@ class Indicators {
                           counter& cnt);
 };
 
-
-
 #endif

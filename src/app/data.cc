@@ -5,16 +5,14 @@
 #include <unordered_map>
 
 #include "data.h"
+#include "hashmap.h"
+
+
+// TODO: Po získání pointru do hash tabulky asyncroně zpracovávat zbytek řádky
 
 
 std::vector<variant>* Data::getWord(std::string word) {
-  auto element = dataMap.find(word);
-
-  if (element == dataMap.end()) {
-    return nullptr;
-  } else {
-    return &(element->second);
-  }
+  return dataMap.get(word);
 }
 
 
@@ -23,77 +21,55 @@ void Data::loadData(char delimeter, char quotechar) {
   std::ifstream file(csvFileName);
   std::string line = "";
 
-  dataMap.clear();
-
   while (getline(file, line)) {
-    dataEntry entry = processLine(line, delimeter, quotechar);
-    dataMap[entry.wa_word] = entry.vars;
+    processLine(line, delimeter);
   }
 }
 
 
-std::string Data::unquote(std::string s, char quotechar) {
-  if (s[0] == quotechar)
-    s = s.substr(1, s.length() - 2);
+// std::string Data::unquote(std::string& s, char quotechar) {
+//   if (s[0] == quotechar)
+//     s = s.substr(1, s.length() - 2);
+//
+//   for (u_int i = 0; i < s.length(); i++) {
+//     if (s[i] == quotechar) {
+//       s.erase(i);
+//       i++;
+//     }
+//   }
+//   return s;
+// }
 
-  for (u_int i = 0; i < s.length(); i++) {
-    if (s[i] == quotechar) {
-      s.erase(i);
-      i++;
-    }
-  }
 
-  return s;
-}
-
-
-Data::dataEntry Data::processLine(std::string line,
-                                  char delimeter,
-                                  char quotechar) {
+void Data::processLine(std::string& line,
+                       char delimeter) {
   /* Načítání jednotlivých řádků z data filu */
-  dataEntry entry;
-  bool quote = false;
-  int start = -1;
+  std::vector<variant>* entry;
+  int count, vec_i, var_i = -1, idx = 0, start = 0;
   std::vector<std::string> split;
 
-  for (u_int i = 0; i < line.length(); i++) {
-    if (start == -1 && line[i] == quotechar) {
-      quote = true;
-    }
-
-    if ((start != -1 && line[i] == quotechar)
-        && (i+1 >= line.length() || line[i+1] != quotechar)) {
-      quote = false;
-    }
-
-    if (start == -1) {
-      start = i;
-    }
-
-    if (!quote && line[i] == delimeter) {
-      split.push_back(line.substr(start, i - start));
-      start = -1;
-    }
-  }
-  split.push_back(line.substr(start, line.length() - 1 - start));
-
-
-  entry.wa_word = unquote(split[0], quotechar);
-  int count = std::stoi(split[1]);
-  std::vector<variant> variants(count);
-
-  for (int i = 0; i < count; i++) {
-    variants[i].word = unquote(split[2 + i*(VEC_LENGTH + 2)]);
-    variants[i].tag = unquote(split[2 + i*(VEC_LENGTH + 2) + 1]);
-
-    if (count > 1) {
-      for (int x = 0; x < VEC_LENGTH; x++) {
-        variants[i].vec[x] = std::stof(split[4 + i*(VEC_LENGTH + 2) + x]);
+  // Pole CSV souboru:
+  // slovo, počet variant, varianta, tag, vec, (varianta, tag, vec)...
+  for (u_int i = 0; i <= line.length(); i++) {
+    if (i == line.length() || line[i] == delimeter) {
+      if (idx == 0) {
+        entry = dataMap.insert(line.substr(start, i - start));
+      } else if (idx == 1) {
+        count = std::stoi(line.substr(start, i - start));
+        entry->resize(count);
+      } else if ((idx - 2) % (VEC_LENGTH + 2) == 0) {
+        var_i++;
+        vec_i = 0;
+        entry->at(var_i).word.assign(line, start, i - start);
+      } else if ((idx - 3) % (VEC_LENGTH + 2) == 0) {
+        entry->at(var_i).tag.assign(line, start, i - start);
+      } else {
+        entry->at(var_i).vec[vec_i] = std::stof(line.substr(start, i - start));
+        vec_i++;
       }
+
+      start = i+1;
+      idx++;
     }
   }
-
-  entry.vars = variants;
-
-  return entry;
 }
