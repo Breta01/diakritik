@@ -8,7 +8,7 @@
 #include "hashmap.h"
 
 
-// TODO: Po získání pointru do hash tabulky asyncroně zpracovávat zbytek řádky
+// TODO: Po získání pointru do hash tabulky asynchroně zpracovávat zbytek řádky
 
 
 std::vector<variant>* Data::getWord(std::string word) {

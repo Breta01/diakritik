@@ -93,7 +93,7 @@ def save_words(dictionary):
     dic_path = os.path.join(os.path.dirname(__file__), 'obj/dictionary.dic')
     with open(dic_path, 'w', encoding='utf-8') as f:
         writer = csv.writer(
-            f, delimiter=' ', quotechar='"', quoting=csv.QUOTE_NONE)
+            f, delimiter=' ', quotechar='', quoting=csv.QUOTE_NONE)
 
         for key in sorted(list(dic.keys())):
             dic[key].finalize()
@@ -155,7 +155,7 @@ def words_extract(path):
                       (dictionary.size(), i, num_lines), end='\r')
 
             # Debuging:
-            # if i == 10000:
+            # if i == 1000000:
             #     break
 
     print()

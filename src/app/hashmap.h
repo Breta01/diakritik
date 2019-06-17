@@ -9,11 +9,12 @@
 // Prvočíslo o 30% větší než velikost slovníku (=1189376)
 const int TABLE_SIZE = 1550027;
 
-const int VEC_LENGTH = 70;
+const int VEC_LENGTH = 69;
 struct variant {
   std::string word;
   std::string tag;
-  float vec[VEC_LENGTH];
+  std::vector<float> vec = std::vector<float>(VEC_LENGTH);
+  /* float vec[VEC_LENGTH]; */
 };
 
 

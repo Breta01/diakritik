@@ -21,6 +21,7 @@ struct token {
 };
 
 
+
 class Parser {
   Data* data;
   char splitChars [29] = {' ', '!', '"', '#', '$', '&', '\'', '(', ')', '*', '+',
@@ -44,8 +45,8 @@ class Parser {
     std::string matchCase(std::string word, std::string org_word);
     std::string getVariant(u_int position,
                            std::vector<token>& sentence);
-    double vecDistance(std::vector<float> a,
-                       std::vector<float> b,
-                       std::vector<float> weights);
+    double vecDistance(std::vector<float>& a,
+                       std::vector<float>& b,
+                       std::vector<float>& weights);
 };
 #endif

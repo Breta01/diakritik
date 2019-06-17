@@ -100,6 +100,8 @@ void Parser::processSentence(str_size start,
   for (u_int i = 0; i < sentence.size(); i++) {
     if (sentence[i].variants == nullptr) {
       text.append(sentence[i].org_word);
+    } else if (sentence[i].variants->size() == 1) {
+      text.append(matchCase(sentence[i].word, sentence[i].org_word));
     } else {
       std::string final_word = getVariant(i, sentence);
       std::cout << sentence[i].wa_word << " > " << final_word << std::endl;
@@ -129,9 +131,9 @@ std::string Parser::matchCase(std::string word, std::string org_word) {
 }
 
 
-double Parser::vecDistance(std::vector<float> a,
-                           std::vector<float> b,
-                           std::vector<float> mask) {
+double Parser::vecDistance(std::vector<float>& a,
+                           std::vector<float>& b,
+                           std::vector<float>& mask) {
   double sum = 0;
   for (u_int i = 0; i < a.size(); i++) {
     sum += mask[i] * (1 - std::pow((double)(a[i] - b[i]), 2));
@@ -141,10 +143,21 @@ double Parser::vecDistance(std::vector<float> a,
 
 
 std::string Parser::getVariant(u_int position, std::vector<token>& sentence) {
-  // Aplikace indikátorů, spočítání vzdáleností, vrácení nejbližší
-  // Test vracení nejpravděpodobnějšího výstupu:
+  // Aplikace indikátorů, spočítání vzdáleností, vrácení nejpravděpodobnější
   counter cnt;
-  return sentence[position].word;
+  Indicators::evaluate(position, sentence, cnt);
+
+  double maxDistance = -1;
+  std::string word;
+  for (u_int i = 0; i < sentence[position].variants->size(); i++) {
+    double distance = vecDistance(sentence[position].variants->at(i).vec,
+                                  cnt.vec,
+                                  cnt.weights);
+    if (distance > maxDistance) {
+      word = sentence[position].variants->at(i).word;
+      maxDistance = distance;
+    }
+  }
+
+  return word;
 }
-
-

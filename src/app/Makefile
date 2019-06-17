@@ -1,6 +1,6 @@
 CXX ?= g++
 PROGRAM = diakritik
-CXXFILES = main.cc data.cc parser.cc indicators.cc hashmap.cc
+CXXFILES = main.cc data.cc parser.cc indicators.cc hashmap.cc tagmapper.cc
 OBJS = $(CXXFILES:.cc=.o)
 DEPDIR = .deps
 CXXFLAGS = `pkg-config --cflags gtkmm-3.0` -std=c++17 -Wall -g
@@ -26,11 +26,9 @@ clean:
 	rm -f $(PROGRAM)
 	rm -rf $(DEPDIR)
 
-install-desktop-file:
+install:
 	@mkdir -p ~/.local/share/applications
 	sed -e "s#@bindir@#$$PWD#" diakritik.desktop > ~/.local/share/applications/$(PROGRAM).desktop
-	@mkdir -p ~/.local/share/icons/hicolor/48x48/apps
-	cp diakritik_icon.png ~/.local/share/icons/hicolor/48x48/apps
 
 run:
 	./diakritik

@@ -6,6 +6,7 @@
 
 #include "parser.h"
 #include "data.h"
+#include "tagmapper.h"
 
 
 typedef unsigned int u_int;
@@ -22,19 +23,11 @@ struct counter {
 };
 
 
-class Indicator {
-  public:
-    virtual void increment(u_int pos,
-                           std::vector<token>& sentence,
-                           counter& cnt) = 0;
-};
-
-
 class Indicators {
   public:
-    static void evaluate (u_int position,
-                          std::vector<token>& sentence,
-                          counter& cnt);
+    static void evaluate(u_int position,
+                         std::vector<token>& sentence,
+                         counter& cnt);
 };
 
 #endif

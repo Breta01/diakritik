@@ -2,13 +2,16 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <limits.h>
+#include <unistd.h>
 
 #include "parser.h"
 
 
 class MainWindow {
+  std::string execPath;
   public:
-    MainWindow();
+    MainWindow(std::string path);
     void run(int argc, char **argv);
 
   protected:
@@ -36,13 +39,14 @@ class MainWindow {
 };
 
 
-MainWindow::MainWindow() {
+MainWindow::MainWindow(std::string path) {
+  execPath = path;
   app = Gtk::Application::create("com.bretahajek.diakritik");
   clipboard = Gtk::Clipboard::get();
 
   builder = Gtk::Builder::create();
   try {
-    builder->add_from_file("main.glade");
+    builder->add_from_file(execPath + "main.glade");
   } catch(const Glib::FileError& ex) {
     std::cerr << "FileError: " << ex.what() << std::endl;
   } catch(const Glib::MarkupError& ex) {
@@ -113,7 +117,7 @@ void MainWindow::run(int argc, char** argv) {
 void MainWindow::loadData() {
   auto start = std::chrono::steady_clock::now();
   std::cout << "Loading data: " << std::flush;
-  parser = new Parser("../obj/dictionary.dic");
+  parser = new Parser(execPath + "../obj/dictionary.dic");
 
   // Aktivace tlačítka "apply"
   std::cout << "finished!" << std::endl;
@@ -206,7 +210,11 @@ void MainWindow::openFile() {
 
 
 int main (int argc, char **argv) {
-  MainWindow window;
+  // TODO: Upravit path, aby fungovala i na Windows
+  std::string execPath = std::string(argv[0]);
+  execPath = execPath.substr(0, execPath.size() - 9);
+
+  MainWindow window(execPath);
   window.run(argc, argv);
 
   return 0;

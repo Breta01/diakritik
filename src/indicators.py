@@ -45,7 +45,7 @@ class Indicator(ABC):
 
 
 class OccurenceInd(Indicator):
-    def __init__(self, name='occurence'):
+    def __init__(self, name='0_occurence'):
         super().__init__(name, 1, 'rel')
 
     def increment(self, sentence, position, token):
@@ -53,7 +53,7 @@ class OccurenceInd(Indicator):
 
 
 class UppercaseInd(Indicator):
-    def __init__(self, name='uppercase'):
+    def __init__(self, name='1_uppercase'):
         super().__init__(name, 1, 'single_rel')
 
     def increment(self, sentence, position, token):
@@ -71,7 +71,7 @@ class UppercaseInd(Indicator):
 
 
 class SentenceTypeInd(Indicator):
-    def __init__(self, name='sentence_type'):
+    def __init__(self, name='2_sentence_type'):
         super().__init__(name, 3, 'single_rel')
         self.maper = {
             '.': 1,
@@ -84,6 +84,7 @@ class SentenceTypeInd(Indicator):
         for i in range(1, min(3, len(sentence)-1)):
             if sentence[-i].word in self.maper:
                 symbol = sentence[-i].word
+                break
 
         if symbol is not None:
             token.counter.increment(self.name, self.maper[symbol])
@@ -93,7 +94,7 @@ class SentenceTypeInd(Indicator):
 
 
 class SpeechInd(Indicator):
-    def __init__(self, name='speech'):
+    def __init__(self, name='3_speech'):
         super().__init__(name, 1, 'single_rel')
 
     @staticmethod
@@ -108,7 +109,7 @@ class SpeechInd(Indicator):
 
 
 class CommaInd(Indicator):
-    def __init__(self, name='comma'):
+    def __init__(self, name='4_comma'):
         super().__init__(name, 1, 'single_rel')
 
     def increment(self, sentence, position, token):
@@ -123,7 +124,7 @@ class CommaInd(Indicator):
 
 
 class PositionInd(Indicator):
-    def __init__(self, name='position'):
+    def __init__(self, name='5_position'):
         super().__init__(name, 3, 'single_rel')
 
     def increment(self, sentence, position, token):
@@ -137,7 +138,7 @@ class PositionInd(Indicator):
         idx = 2
         if start < end:
             if position == start:
-                idx = 0
+                idx = 1
             elif position == end:
                 idx = 3
 
@@ -145,24 +146,18 @@ class PositionInd(Indicator):
 
 
 class VerbInd(Indicator):
-    def __init__(self, name='verb'):
+    def __init__(self, name='6_verb'):
         super().__init__(name, 7, 'single_rel')
         self.cislo_map = {'-': 1, 'S': 2, 'P': 3}
         self.osoba_map = {'-': 4, '1': 5, '2': 6, '3': 7}
 
     def find_verb(self, sentence, position):
         verbs = []
+        # Nalezení sloves a odstranění infinitivů
         for i, w in enumerate(sentence):
-            if w.tag[0] == 'V':
+            if (w.tag[0] == 'V' and
+                w.tag[3] != '-'):
                 verbs.append((i, w))
-
-        # Odstranění infinitivů
-        if len(verbs) > 1:
-            new_verbs = []
-            for v in verbs:
-                if v[1].tag[3] != '-' and v[1].tag[7] != '-':
-                    new_verbs.append(v)
-            verbs = new_verbs
 
         if len(verbs) == 0:
             return None
@@ -181,7 +176,7 @@ class VerbInd(Indicator):
 
 
 class PrevWordInd(Indicator):
-    def __init__(self, name='prev_word'):
+    def __init__(self, name='7_prev_word'):
         super().__init__(name, 22, 'single_rel')
         self.druh_map = {'-': 1, 'N': 2, 'A': 3, 'P': 4, 'C': 5}
         self.rod_map = {'-': 6, 'F': 7, 'I': 8, 'M': 9, 'N': 10}
@@ -199,7 +194,7 @@ class PrevWordInd(Indicator):
 
 
 class NextWordInd(PrevWordInd):
-    def __init__(self, name='next_word'):
+    def __init__(self, name='8_next_word'):
         super().__init__(name)
 
     def increment(self, sentence, position, token):
@@ -213,7 +208,7 @@ class NextWordInd(PrevWordInd):
 
 
 class PrepositionInd(Indicator):
-    def __init__(self, name='preposition'):
+    def __init__(self, name='9_preposition'):
         super().__init__(name, 8, 'single_rel')
         self.pad_map = lambda x: 1 + (int(x) if not x in ['-', 'X'] else 0)
 
@@ -227,16 +222,16 @@ class PrepositionInd(Indicator):
 
 
 indicators = {
-    "occurence": OccurenceInd(),
-    "uppercase": UppercaseInd(),
-    "sentence_type": SentenceTypeInd(),
-    "speech": SpeechInd(),
-    "comma": CommaInd(),
-    "position": PositionInd(),
-    "verb": VerbInd(),
-    "prev_word": PrevWordInd(),
-    "next_word": NextWordInd(),
-    "preposition": PrepositionInd()
+    "0_occurence": OccurenceInd(),
+    "1_uppercase": UppercaseInd(),
+    "2_sentence_type": SentenceTypeInd(),
+    "3_speech": SpeechInd(),
+    "4_comma": CommaInd(),
+    "5_position": PositionInd(),
+    "6_verb": VerbInd(),
+    "7_prev_word": PrevWordInd(),
+    "8_next_word": NextWordInd(),
+    "9_preposition": PrepositionInd()
 }
 
 
@@ -265,8 +260,8 @@ class IndicatorCounter:
             self.counter[name] = [i / total for i in self.counter[name]]
 
     def get_vector(self):
-        vector = [self.counter["occurence"][0]]
-        for ind in indicators:
+        vector = []
+        for ind in sorted(indicators):
             vector.extend(self.counter[ind][1:])
         return vector
 
