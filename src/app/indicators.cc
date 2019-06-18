@@ -163,8 +163,8 @@ class VerbInd {
       }
 
       if (dist != -1) {
-        cnt.vec[TagMapper::verbCisloMap(tag[3])] = 1;
-        cnt.vec[TagMapper::verbOsobaMap(tag[7])] = 1;
+        cnt.vec[idx + TagMapper::verbCisloMap(tag[3])] = 1;
+        cnt.vec[idx + TagMapper::verbOsobaMap(tag[7])] = 1;
         cnt.setWeights(idx, length, weights);
       }
 
@@ -189,10 +189,10 @@ class PrevWordInd {
 
       if (prev >= 0) {
         std::string tag = sentence[prev].tag;
-        cnt.vec[TagMapper::druhMap(tag[0])] = 1;
-        cnt.vec[TagMapper::rodMap(tag[2])] = 1;
-        cnt.vec[TagMapper::cisloMap(tag[3])] = 1;
-        cnt.vec[TagMapper::padMap(tag[4])] = 1;
+        cnt.vec[idx + TagMapper::druhMap(tag[0])] = 1;
+        cnt.vec[idx + TagMapper::rodMap(tag[2])] = 1;
+        cnt.vec[idx + TagMapper::cisloMap(tag[3])] = 1;
+        cnt.vec[idx + TagMapper::padMap(tag[4])] = 1;
 
         cnt.setWeights(idx, length, weights);
       }
@@ -219,10 +219,10 @@ class NextWordInd {
 
       if (next < sentence.size()) {
         std::string tag = sentence[next].tag;
-        cnt.vec[TagMapper::druhMap(tag[0])] = 1;
-        cnt.vec[TagMapper::rodMap(tag[2])] = 1;
-        cnt.vec[TagMapper::cisloMap(tag[3])] = 1;
-        cnt.vec[TagMapper::padMap(tag[4])] = 1;
+        cnt.vec[idx + TagMapper::druhMap(tag[0])] = 1;
+        cnt.vec[idx + TagMapper::rodMap(tag[2])] = 1;
+        cnt.vec[idx + TagMapper::cisloMap(tag[3])] = 1;
+        cnt.vec[idx + TagMapper::padMap(tag[4])] = 1;
 
         cnt.setWeights(idx, length, weights);
       }
@@ -244,7 +244,7 @@ class PrepositionInd {
       for (u_int i = 0; i < 3; i++) {
         if (pos >= i + 1 && sentence[pos - (i + 1)].tag[0] == 'R') {
           char pad = sentence[pos - (i + 1)].tag[4];
-          cnt.vec[TagMapper::padMap(pad) - 14] = 1;
+          cnt.vec[idx + TagMapper::padMap(pad) - 14] = 1;
           cnt.setWeights(idx, length, weights);
         }
       }

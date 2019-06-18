@@ -7,8 +7,6 @@ CXXFLAGS = `pkg-config --cflags gtkmm-3.0` -std=c++17 -Wall -g
 LIBS = `pkg-config --libs gtkmm-3.0`
 
 
-build-run: all run
-
 all: $(PROGRAM)
 
 -include $(OBJS:%.o=$(DEPDIR)/%.Po)

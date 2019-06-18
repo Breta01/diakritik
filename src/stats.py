@@ -30,7 +30,9 @@ def load_dic(path):
 
     dictionary = {}
     with open(path, 'r') as f:
-        reader = csv.reader(f, delimiter=',')
+        reader = csv.reader(
+                f, delimiter=' ', quotechar='', quoting=csv.QUOTE_NONE)
+
         for line in reader:
             dictionary[line[0]] = {}
 
